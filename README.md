@@ -22,10 +22,10 @@ The Salesforce Object Creation Script is a Python tool designed to facilitate th
 
 ### Running the Script
 
-The script is executed from the command line using the `python` command followed by the script filename (`my_script.py`). Below is the general syntax:
+The script is executed from the command line using the `python` command followed by the script filename (`main.py`). Below is the general syntax:
 
 ```
-python my_script.py [OPTIONS]
+python main.py [OPTIONS]
 ```
 
 
@@ -50,7 +50,7 @@ python my_script.py [OPTIONS]
 1. Import data from a local CSV file and send it to Salesforce:
 
 ```
-python my_script.py --input-path=file:///path/to/local/file.csv
+python main.py --input-path=file:///path/to/local/file.csv
 --sf-api-instance-url=https://your-instance.salesforce.com
 --sf-api-endpoint=/services/data/vXX.X/sobjects/ObjectName
 --sf-api-access-token=your_access_token
@@ -59,7 +59,7 @@ python my_script.py --input-path=file:///path/to/local/file.csv
 2. Fetch rows from a BigQuery query and update Salesforce objects:
 
 ```
-python my_script.py --input-path=bigquery://U29tZSBiaW5kIHF1ZXN0aW9ucyBhc3N1bXB0aW9u
+python main.py --input-path=bigquery://U29tZSBiaW5kIHF1ZXN0aW9ucyBhc3N1bXB0aW9u
 --input-bigquery-project-id=your_project_id
 --sf-api-instance-url=https://your-instance.salesforce.com
 --sf-api-endpoint=/services/data/vXX.X/sobjects/ObjectName
