@@ -16,7 +16,7 @@ The Salesforce Object Creation Script is a Python tool designed to facilitate th
 
 ### Installation
 
-1. Clone the repository or download the script file (`my_script.py`) to your local machine.
+1. Clone the repository to your local machine.
 2. Ensure that Python 3.x is installed on your system.
 3. Install the required dependencies by running `pip install -r requirements.txt`.
 
