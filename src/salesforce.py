@@ -134,14 +134,14 @@ class SaleforceAPIClient:
             self.send_bulk_request(self.queue)
             self.reset_queue()
 
-    def send_all_rows(self, it, bulk=True):
+    def send_all_rows(self, rows, bulk=True):
         """Sends all items in the iterable 'rows', either individually or in bulk depending on the 'bulk' flag.
 
         Args:
             it (iterable): Iterable containing items to be sent.
             bulk (bool, optional): Whether to send items in bulk. Defaults to True.
         """
-        for row in it:
+        for row in rows:
             v = self.custom_json_encoder(row)
             if bulk:
                 self.queue_item_and_send_bulk_request(v)
