@@ -191,6 +191,6 @@ class SaleforceAPIClient:
         except Exception as e:
             self.logger.info(e)
         if resp.status_code == 200:
-            self.logger.info("request sent", resp.content.decode("utf-8"))
+            self.logger.info("request sent %s" % resp.content.decode("utf-8"))
         else:
             self.logger.warning("error when sending the rows", resp.content)
