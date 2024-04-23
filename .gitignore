@@ -1,0 +1,9 @@
+venv/
+commands/
+dist/
+login/
+build/
+.lprof/
+__pycache__
+talk_to_salesforce.egg-info/
+.env
