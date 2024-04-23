@@ -31,16 +31,14 @@ python main.py [OPTIONS]
 
 ### Options
 
-- `--input-path`: Specifies the source of input data. Supported formats include `gs://{bucket}/{key}` for Google Cloud Storage, `file://{local_path}` for local files, or `bigquery://{base64_encoded_sql_query}` for BigQuery queries.
-- `--input-storage-project-id`: (Optional) Google Cloud Storage project ID to use for billing when fetching files.
-- `--input-bigquery-project-id`: (Optional) Google Cloud Storage project ID to use for billing when fetching rows using BigQuery.
+- `--input`: Specifies the source of input data. Supported formats include `gs://{bucket}/{key}` for Google Cloud Storage, `file://{local_path}` for local files, or `bigquery://{base64_encoded_sql_query}` for BigQuery queries. Use the `project` query parameter to define a specific GCP project to use for querying or loading data.
 - `--input-file-format`: (Optional) Specifies the format of input files (default: CSV).
 - `--input-csv-file-has-headers`: (Optional) Indicates whether the input CSV file contains headers.
 - `--sf-api-req-item-json-template`: (Optional) Jinja template to transform input data into the format expected by Salesforce.
 - `--sf-api-instance-url`: URL of the Salesforce instance.
-- `--sf-api-endpoint`: Salesforce API endpoint to send the records to.
 - `--sf-api-access-token`: Access token used to authenticate the request.
-- `--sf-api-method`: (Optional) Method used to send the request (default: POST).
+- `--sf-api-object`: Salesforce object to insert or upsert.
+- `--sf-api-external-id`: (Optional) To be used when upserting. Defines which attribute to use as a joining key.
 - `--sf-api-bulk-size`: (Optional) Size of the bulk (default: 200).
 - `--sf-api-all-or-none`: (Optional) Boolean used in the API request body.
 - `--dry-run`: (Optional) Simulates HTTP requests without making changes to Salesforce data.
@@ -50,20 +48,20 @@ python main.py [OPTIONS]
 1. Import data from a local CSV file and send it to Salesforce:
 
 ```
-python main.py --input-path=file:///path/to/local/file.csv
---sf-api-instance-url=https://your-instance.salesforce.com
---sf-api-endpoint=/services/data/vXX.X/sobjects/ObjectName
+python main.py --input=file:///path/to/local/file.csv
 --sf-api-access-token=your_access_token
+--sf-api-instance-url=https://your-instance.salesforce.com
+--sf-api-object=Account
 ```
 
 2. Fetch rows from a BigQuery query and update Salesforce objects:
 
 ```
-python main.py --input-path=bigquery://U29tZSBiaW5kIHF1ZXN0aW9ucyBhc3N1bXB0aW9u
---input-bigquery-project-id=your_project_id
+python main.py --input=bigquery://U29tZSBiaW5kIHF1ZXN0aW9ucyBhc3N1bXB0aW9u?project=xxx
 --sf-api-instance-url=https://your-instance.salesforce.com
---sf-api-endpoint=/services/data/vXX.X/sobjects/ObjectName
 --sf-api-access-token=your_access_token
+--sf-api-object=Account
+--sf-api-external-id=customer_id
 ```
 
 
