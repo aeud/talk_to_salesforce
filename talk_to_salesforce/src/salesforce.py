@@ -7,7 +7,9 @@ from .utils import unflatten
 
 def build_api_endpoint(instance_url, version="v58.0", object=None, external_id=None):
     instance_url = re.sub("/$", "", instance_url)
-    if object is not None and external_id is not None:
+    if object is None:
+        raise Exception("Object cannot be none")
+    if external_id is not None and external_id != "":
         return "%s/services/data/%s/composite/sobjects/%s/%s" % (
             instance_url,
             version,

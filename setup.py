@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="talk_to_salesforce",
-    version="0.3",
+    version="2.0.1",
     packages=find_packages(),
     install_requires=[
         "click",
@@ -14,7 +14,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "talk-to-salesforce = talk_to_salesforce:main",    
+            "talk-to-salesforce = talk_to_salesforce:cli",    
         ],
     },
 )
