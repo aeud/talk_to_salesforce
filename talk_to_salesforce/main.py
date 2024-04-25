@@ -76,14 +76,14 @@ def main(
 @click.option(
     "--sf-api-instance-url",
     prompt="Salesforce Instance URL",
-    help="URL of the instance that the org lives on",
+    help="URL of the instance that the org lives on. Can use the SF_INSTANCE_URL environment variable as default value.",
     required=True,
     envvar="SF_INSTANCE_URL",
 )
 @click.option(
     "--sf-api-access-token",
     prompt="Salesforce access token",
-    help="Access token used to authenticate the request",
+    help="Access token used to authenticate the request. Can use the SF_ACCESS_TOKEN environment variable as default value.",
     required=True,
     envvar="SF_ACCESS_TOKEN",
     hide_input=True,
