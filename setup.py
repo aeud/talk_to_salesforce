@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="talk_to_salesforce",
-    version="2.0.1",
+    version="2.0.2",
     packages=find_packages(),
     install_requires=[
         "click",
