@@ -22,6 +22,7 @@ def main(
     sf_api_bulk_size,
     sf_api_all_or_none,
     dry_run,
+    errors_folder_path,
 ):
     """Main function that orchestrates the data fetching and sending to Salesforce."""
 
@@ -35,6 +36,7 @@ def main(
     sf_client.set_all_or_none(sf_api_all_or_none)
     sf_client.set_bulk_size(sf_api_bulk_size)
     sf_client.set_dry_run_mode(dry_run)
+    sf_client.set_errors_folder_path(errors_folder_path)
     if sf_api_req_item_json_template is not None:
         sf_client.set_req_item_json_template(sf_api_req_item_json_template)
 
@@ -84,7 +86,6 @@ def main(
     "--sf-api-access-token",
     prompt="Salesforce access token",
     help="Access token used to authenticate the request. Can use the SF_ACCESS_TOKEN environment variable as default value.",
-    required=True,
     envvar="SF_ACCESS_TOKEN",
     hide_input=True,
 )
@@ -96,7 +97,7 @@ def main(
 )
 @click.option(
     "--sf-api-external-id",
-    prompt="External key to use (upsert only)",
+    # prompt="External key to use (upsert only)",
     help="External ID to use when upserting elements. When mentioned, the API will be called using the PATCH method",
     default="",
 )
@@ -119,6 +120,11 @@ def main(
     show_default=True,
     help="When used, HTTP requests will not be sent, and the body will be written to standard output",
 )
+@click.option(
+    "--errors-folder-path",
+    default=None,
+    help="Folder path to use to store errors (can be filesystem or google cloud storage uri.)",
+)
 def cli(
     input,
     input_file_format,
@@ -131,6 +137,7 @@ def cli(
     sf_api_bulk_size,
     sf_api_all_or_none,
     dry_run,
+    errors_folder_path,
 ):
 
     # Check secrets or environment variables for relevant variables
@@ -152,6 +159,7 @@ def cli(
         sf_api_bulk_size,
         sf_api_all_or_none,
         dry_run,
+        errors_folder_path,
     )
 
 

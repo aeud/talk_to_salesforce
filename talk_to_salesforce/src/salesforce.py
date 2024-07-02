@@ -2,8 +2,17 @@ import json
 import requests
 import logging
 import re
-from .utils import unflatten
+from .utils import unflatten, store_errors
 
+
+class SomeRecordsFailed(Exception):
+    pass
+
+class RequestFailed(Exception):
+    pass
+
+class ErrorWhenSendingRows(Exception):
+    pass
 
 def build_api_endpoint(instance_url, version="v58.0", object=None, external_id=None):
     instance_url = re.sub("/$", "", instance_url)
@@ -46,6 +55,17 @@ class SaleforceAPIClient:
         self.set_session(requests.Session())
         self.reset_queue()
         self.access_token = None
+        self.errors = []
+        self.errors_folder_path = None
+
+    def set_errors_folder_path(self, path):
+        self.errors_folder_path = path
+
+    def append_error(self, e):
+        self.errors.append(e)
+    
+    def had_errors(self):
+        return len(self.errors) > 0
 
     def login(self, access_token):
         """log the client, using the access_token
@@ -137,7 +157,7 @@ class SaleforceAPIClient:
             record (dict): Record to be sent.
             all_or_none (bool, optional): Whether all records should be processed if any fail. Defaults to False.
         """
-        return self.send_bulk_request(records=[record], all_or_none=all_or_none)
+        return self.send_bulk_request(records=[record])
 
     def send_bulk_request(self, records):
         """Sends a bulk API request with the provided records as the payload.
@@ -151,7 +171,14 @@ class SaleforceAPIClient:
                 "records": records,
             }
         )
-        self.send_http_request(self.api_http_method, body)
+        try:
+            self.send_http_request(self.api_http_method, body)
+        except SomeRecordsFailed as e:
+            self.append_error(e)
+            store_errors(self.errors_folder_path, str(e), records)
+        except RequestFailed as e:
+            self.append_error(e)
+            store_errors(self.errors_folder_path, str(e), records)
 
     def queue_item_and_send_bulk_request(self, item):
         """Adds an item to the queue and sends a bulk request if the queue size reaches the set bulk size.
@@ -183,6 +210,8 @@ class SaleforceAPIClient:
         if check_empty_iterator:
             self.logger.info("No record to send")
         self.flush()
+        if self.had_errors():
+            raise ErrorWhenSendingRows("\n".join([str(e) for e in self.errors]))
 
     def flush(self):
         """Flushes the queue by sending any remaining items in bulk."""
@@ -244,5 +273,8 @@ class SaleforceAPIClient:
                 else:
                     self.logger.warning("error when sending %s" % r)
             self.logger.info("request sent (%d/%d)" % (success_n, len(p)))
+            if success_n < len(p):
+                raise SomeRecordsFailed(json.dumps(p, indent=2))
         else:
-            self.logger.warning("error when sending the rows (%s), code: %d", (resp.content, resp.status_code))
+            self.logger.warning("error when sending the rows (%s), code: %d" % (resp.content, resp.status_code))
+            raise RequestFailed("error when sending the rows (%s), code: %d" % (resp.content, resp.status_code))

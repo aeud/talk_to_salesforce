@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  script: |
+    docker build -t us.gcr.io/$PROJECT_ID/jobs/talk_to_salesforce:$TAG_NAME .
+  automapSubstitutions: true
+images:
+- 'us.gcr.io/$PROJECT_ID/jobs/talk_to_salesforce:$TAG_NAME'

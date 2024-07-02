@@ -1,14 +1,44 @@
 import csv
+import json
 import os
 import re
 import base64
 from urllib.parse import urlparse, parse_qs
 from functools import reduce
+from datetime import datetime
 
 
 # Constant for defining file format as CSV
 FILE_FORMAT_CSV = "CSV"
+FILE_FORMAT_JSONL = "JSONL"
 
+
+class StorageURI():
+    def __init__(self, uri=None):
+        if uri is not None:
+            self.from_uri(uri)
+    def from_uri(self, uri):
+        self.method, full_path, parameters = source_parse_input(uri)
+        if self.method != "gs":
+            raise Exception("error outputs can only manage gs:// blobs")
+        self.bucket_name, self.path = storage_parse_path(full_path)
+        try:
+            self.project_id = parameters.get("project", [])[0]
+        except IndexError:
+            self.project_id = None
+    def get_uri(self):
+        uri = "%s://%s/%s" % (
+            self.method,
+            self.bucket_name,
+            self.path,
+        )
+        if self.project_id is not None:
+            uri = "%s?project=%s" % (uri, self.project_id)
+        return uri
+    def new_child(self, child_name):
+        child = StorageURI(self.get_uri())
+        child.path = "%s/%s" % (child.path, child_name)
+        return child
 
 
 def download_file(project_id, bucket_name, blob_name, tmp_file_path):
@@ -44,6 +74,11 @@ def collect_rows(file, input_file_format, input_csv_file_has_headers=False):
         else:
             reader = csv.reader(file)
         return reader
+    elif input_file_format == FILE_FORMAT_JSONL:
+        records = []
+        for line in file:
+            records.append(json.loads(line))
+        return records
     else:
         raise Exception("only CSV file format is developed yet")
 
@@ -151,3 +186,39 @@ def unflatten(d, separator='.'):
         path = k.split(separator)
         set_nested(output, path, v)
     return output
+
+def store_errors(folder_path, error_response, records):
+    if folder_path is None:
+        return
+    uuid = datetime.now().isoformat()
+    records_filename = "records_%s.jsonl" % uuid
+    error_filename = "error_%s.txt" % uuid
+    blob_folder_ref = StorageURI(folder_path)
+    error_blob_ref = blob_folder_ref.new_child(error_filename)
+    records_blob_ref = blob_folder_ref.new_child(records_filename)
+    records_content = list_to_json_nl(records)
+    errors_content = """to execute again, use the option --input %s
+-------
+error message:
+%s
+""" % (
+        records_blob_ref.get_uri(),
+        error_response,
+    )
+    create_blob(records_blob_ref.project_id, records_blob_ref.bucket_name, records_blob_ref.path, records_content)
+    create_blob(error_blob_ref.project_id, error_blob_ref.bucket_name, error_blob_ref.path, errors_content)
+
+def create_blob(project_id, bucket_name, blob_name, content):
+    from google.cloud.storage import Client
+    client = Client(project=project_id)
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+    blob.upload_from_string(content)
+
+def create_file(filename, content):
+    with open(filename, "w") as f:
+        f.write(content)
+        f.close()
+
+def list_to_json_nl(records):
+    return "\n".join([json.dumps(r) for r in records])
