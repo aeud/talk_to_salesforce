@@ -1,8 +1,9 @@
 """Script used to create or update Saleforce objects from data sets"""
 
 import click
+import sys
 import logging
-from talk_to_salesforce.src.salesforce import SaleforceAPIClient
+from talk_to_salesforce.src.salesforce import SaleforceAPIClient, ErrorWhenSendingRows
 from talk_to_salesforce.src.datasets import Dataset
 from talk_to_salesforce.src.utils import args_secret_wrapper, FILE_FORMAT_CSV
 
@@ -49,7 +50,11 @@ def main(
     )
     rows = dataset.get_rows()
 
-    sf_client.send_all_rows(rows, bulk=True)
+    try:
+        sf_client.send_all_rows(rows, bulk=True)
+    except ErrorWhenSendingRows as e:
+        logger.error(e)
+        # sys.exit(1)
 
 @click.command()
 @click.option(
