@@ -211,7 +211,7 @@ class SaleforceAPIClient:
             self.logger.info("No record to send")
         self.flush()
         if self.had_errors():
-            raise ErrorWhenSendingRows("\n".join([str(e) for e in self.errors]))
+            raise ErrorWhenSendingRows(json.dumps({"errors": [str(e) for e in self.errors]}))
 
     def flush(self):
         """Flushes the queue by sending any remaining items in bulk."""
@@ -263,7 +263,7 @@ class SaleforceAPIClient:
         try:
             resp = self.session.send(prepped)
         except Exception as e:
-            self.logger.info(e)
+            self.logger.warning(e)
         if resp.status_code == 200:
             p = resp.json()
             success_n = 0
@@ -271,10 +271,10 @@ class SaleforceAPIClient:
                 if r.get("success"):
                     success_n = success_n + 1
                 else:
-                    self.logger.warning("error when sending %s" % r)
+                    self.logger.error("error when sending %s" % r)
             self.logger.info("request sent (%d/%d)" % (success_n, len(p)))
             if success_n < len(p):
-                raise SomeRecordsFailed(json.dumps(p, indent=2))
+                raise SomeRecordsFailed(json.dumps(p))
         else:
-            self.logger.warning("error when sending the rows (%s), code: %d" % (resp.content, resp.status_code))
+            self.logger.error("error when sending the rows (%s), code: %d" % (resp.content, resp.status_code))
             raise RequestFailed("error when sending the rows (%s), code: %d" % (resp.content, resp.status_code))

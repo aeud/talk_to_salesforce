@@ -53,8 +53,7 @@ def main(
     try:
         sf_client.send_all_rows(rows, bulk=True)
     except ErrorWhenSendingRows as e:
-        logger.error(e)
-        # sys.exit(1)
+        pass
 
 @click.command()
 @click.option(
